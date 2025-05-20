@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inner Radius Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .input-group h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .result h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        #result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            color: #2c3e50;
+        }
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            border: 1px solid #e74c3c;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inner Radius Calculator</h1>
+        
+        <div id="error-message" class="error"></div>
+        
+        <div class="input-group">
+            <h2>Input Parameters</h2>
+            <div class="form-group">
+                <label for="m-input">M:</label>
+                <input type="number" id="m-input" step="any">
+            </div>
+            
+            <div class="form-group">
+                <label for="f-input">F:</label>
+                <input type="number" id="f-input" step="any">
+            </div>
+            
+            <div class="form-group">
+                <label for="ro-input">ro:</label>
+                <input type="number" id="ro-input" step="any">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="calculate-btn">Calculate ri</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <div class="result">
+            <h2>Result</h2>
+            <div id="result-value">ri will appear here</div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const mInput = document.getElementById('m-input');
+            const fInput = document.getElementById('f-input');
+            const roInput = document.getElementById('ro-input');
+            const resultValue = document.getElementById('result-value');
+            const errorMessage = document.getElementById('error-message');
+            
+            calculateBtn.addEventListener('click', function() {
+                // Clear previous error message
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                
+                // Validate inputs
+                if (!mInput.value || !fInput.value || !roInput.value) {
+                    showError('Please enter all required values');
+                    return;
+                }
+                
+                const M = parseFloat(mInput.value);
+                const F = parseFloat(fInput.value);
+                const ro = parseFloat(roInput.value);
+                
+                if (ro <= 0) {
+                    showError('ro must be positive');
+                    return;
+                }
+                
+                // Send calculation request
+                fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ M, F, ro })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                    } else {
+                        resultValue.textContent = `ri = ${data.ri.toFixed(6)}`;
+                    }
+                })
+                .catch(error => {
+                    showError('An error occurred during calculation');
+                    console.error('Error:', error);
+                });
+            });
+            
+            resetBtn.addEventListener('click', function() {
+                mInput.value = '';
+                fInput.value = '';
+                roInput.value = '';
+                resultValue.textContent = 'ri will appear here';
+                errorMessage.style.display = 'none';
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
